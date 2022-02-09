@@ -6,6 +6,7 @@ from fastapi import FastAPI, Response, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from pathlib import Path
 
 app = FastAPI()
 origins = ["*"]
@@ -21,6 +22,15 @@ app.add_middleware(
 
 
 uploads = {}
+
+
+def create_workspace():
+    workarea = Path.joinpath(Path.cwd().parent.absolute(), "filespace")
+    Path.mkdir(workarea, exist_ok=True, parents=True)
+    return workarea
+
+
+workspace = create_workspace()
 
 
 def get_chunk_name(uploaded_filename, chunk_number):
@@ -79,7 +89,7 @@ def read_item(request: Request, file: UploadFile = File(...)):
     # combile all chunks to create file
     if upload_complete:
 
-        target_file_name = os.path.join(os.getcwd(), "now", rfilename)
+        target_file_name = os.path.join(workspace, rfilename)
         with open(target_file_name, "ab", buffering=BUFSIZE) as target_file:
             for p in chunk_paths:
                 stored_chunk_file_name = p
